@@ -13,6 +13,14 @@ class FakeServiceProvider(Provider):
         return FakeService()
 
 
+class SingletonFakeServiceProvider(Provider):
+    _provides = "FakeService"
+
+    @singleton
+    def provide(self):
+        return FakeService()
+
+
 class TestProvider:
     def test_get_own_name_returns_default_name(self):
         provider = FakeServiceProvider()
@@ -108,3 +116,21 @@ class TestInject:
             result = self.method_with_injection()
 
             assert isinstance(result, FakeService)
+
+
+class TestSingleton:
+    @inject
+    def method_with_injection(self, service: FakeService):
+        return service
+
+    def test_decorator_should_return_same_instance_on_every_call(self):
+        app = Flask(__name__)
+        di = DI(app, [SingletonFakeServiceProvider])
+
+        with app.test_request_context("/"):
+            app.preprocess_request()
+
+            instance1 = self.method_with_injection()
+            instance2 = self.method_with_injection()
+
+            assert instance1 is instance2

@@ -13,9 +13,10 @@ class WrongProviderObjectException(Exception):
 
 class Provider:
     _provides = None
+    _instance = None
 
     def provide(self):
-        pass
+        raise NotImplementedError()
 
     def get_provided_object_name(self) -> str:
         return self.__class__.__name__.replace("Provider", "") if self._provides is None else self._provides
@@ -50,10 +51,9 @@ class ServiceLocator:
 
 
 class DI:
-    _app = None
-    _provider = None
-
     def __init__(self, app: Flask = None, provider: List[Type[Provider]] = None):
+        self._app = app
+        self._provider = provider
         if app is not None:
             self.init_app(app, provider)
 
@@ -88,4 +88,13 @@ def inject(func):
                 kwargs[param] = resolved
         return func(*args, **kwargs)
 
+    return func_wrapper
+
+
+def singleton(func):
+    @wraps(func)
+    def func_wrapper(self, *args, **kwargs):
+        if self._instance is None:
+            self._instance = func(self, *args, **kwargs)
+        return self._instance
     return func_wrapper
