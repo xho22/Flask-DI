@@ -9,8 +9,10 @@ consider traditional dependency injection good software craftsmanship and was
 looking for a quick and simple way to inject dependencies into my Flask applications using Pythons
 newest type hinting features.
 
-Currently, Flask-DI is only available on Github. I will submit this package to
-PyPI as soon as I feel satisfied with the feature set.
+```python
+pip install Flask-DI
+```
+
 
 Getting started
 ---------------
