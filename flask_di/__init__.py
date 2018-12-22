@@ -39,8 +39,14 @@ class ServiceLocator:
         self.provider = {}
 
     def register_provider(self, provider: Type[Provider]) -> None:
-        provider_instance = provider()
-        self.provider[provider_instance.get_provided_object_name()] = provider_instance
+        init_flag = True
+        for p_name, p_instance in self.provider.items():
+            if type(p_instance) == provider:
+                init_flag = False
+                break
+        if init_flag:
+            provider_instance = provider()
+            self.provider[provider_instance.get_provided_object_name()] = provider_instance
 
     def resolve(self, dependency) -> Any:
         dep = self.provider.get(dependency)  # type: Provider
@@ -69,12 +75,17 @@ class DI:
                     raise WrongProviderObjectException("Provider need to subclass the Provider class.")
                 self.get_service_locator().register_provider(p)
 
+    # hold singleton ServiceLocator
+    __current_service_locator = None
+
     @staticmethod
     def get_service_locator() -> ServiceLocator:
         ctx = _app_ctx_stack.top
         if ctx is not None:
             if not hasattr(ctx, 'flask_di'):
-                ctx.flask_di = ServiceLocator()
+                if DI.__current_service_locator is None:
+                    DI.__current_service_locator = ServiceLocator()
+                ctx.flask_di = DI.__current_service_locator
             return ctx.flask_di
 
 

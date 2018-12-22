@@ -129,8 +129,10 @@ class TestSingleton:
 
         with app.test_request_context("/"):
             app.preprocess_request()
-
             instance1 = self.method_with_injection()
+
+            app.preprocess_request()
             instance2 = self.method_with_injection()
 
-            assert instance1 is instance2
+        assert instance1 is instance2
+        assert id(instance1) == id(instance2)
